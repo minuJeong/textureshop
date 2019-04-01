@@ -11,27 +11,16 @@ layout(binding=0) buffer out_buffer
     vec4 o_col[];
 };
 
-uniform sampler2D u_noise_tex;
+layout(binding=1) buffer in_buffer
+{
+    vec4 in_col[];
+};
 
 uniform int u_width;
 uniform int u_height;
 
-
-float fbm(vec2 x, int octaves)
-{
-    float v = 0.0;
-    float a = 0.5;
-    vec2 shift = vec2(100);
-
-    mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.50));
-    for (int i = 0; i < octaves; ++i)
-    {
-        v += a * texture(u_noise_tex, x).x;
-        x = rot * x * 2.0 + shift;
-        a *= 0.5;
-    }
-    return v;
-}
+uniform float u_min_value;
+uniform float u_max_value;
 
 void main()
 {
@@ -46,15 +35,6 @@ void main()
         uv = xy / wh;
     }
 
-    vec2 nuv = uv * 0.01;
-    float n = fbm(nuv, 5);
-
-    n = clamp(n, 0.0, 1.0);
-
-    vec4 rgba;
-    rgba.xyz = vec3(n);
-    rgba.w = 1.0;
-
     int i = int(xy.x + xy.y * wh.x);
-    o_col[i] = rgba;
+    o_col[i] = clamp(in_col[i], u_min_value, u_max_value);
 }

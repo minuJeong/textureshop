@@ -6,7 +6,6 @@ import numpy as np
 
 from base import Base
 from util import cpu_noise
-from util import to_glbytes
 
 
 class FBMNoise(Base):
@@ -17,11 +16,14 @@ class FBMNoise(Base):
             self.u_noise_tex = noise_tex
             return
 
-        if isinstance(noise_tex, type(np.ndarray)):
+        if isinstance(noise_tex, (np.ndarray)):
             s = noise_tex.shape
             size = (s[0], s[1])
-            channels = s[2]
-            data = to_glbytes(noise_tex)
+            channels = 1
+            if len(s) > 2:
+                channels = s[2]
+
+            data = noise_tex.astype(np.float32).tobytes()
             self.u_noise_tex = self.gl.texture(size, channels, data, dtype="f4")
             return
 
@@ -41,13 +43,17 @@ class FBMNoise(Base):
         cs_path = "./gl/fbm_noise.glsl"
         self.cs = self.get_cs(cs_path)
 
-        if noise_tex:
+        if noise_tex is not None:
             self.set_noisetex(noise_tex)
 
         if not hasattr(self, "u_noise_tex"):
-            print("noise texture not coming in, using cpu noise.")
+            print("[FBM Noise] noise texture not coming in, using cpu noise.")
             cpu_noise_data = cpu_noise(self.W, self.H)
             self.set_noisetex(cpu_noise_data, (self.W, self.H))
+
+        return self
+
+    def out_node(self):
         self.u_noise_tex.use(0)
 
         out_buffer = np.zeros((self.W, self.H, 4))
@@ -56,7 +62,6 @@ class FBMNoise(Base):
         self.cs_out = self.gl.buffer(out_buffer.tobytes())
         self.cs_out.bind_to_storage_buffer(0)
 
-    def out_node(self):
         gx, gy = math.ceil(self.W / 32), math.ceil(self.H / 32)
         self.cs.run(gx, gy)
 
