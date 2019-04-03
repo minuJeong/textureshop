@@ -1,4 +1,6 @@
 
+import unittest
+
 import numpy as np
 import moderngl as mg
 
@@ -21,10 +23,15 @@ class Base(object):
                 print("[Base] New GL context with id: {}".format(id(self.gl)))
         Base.GL = self.gl
 
-    def get_cs(self, cs_path):
-        cs = None
+    def get_cs(self, cs_path, inject={}):
+        context = None
         with open(cs_path, 'r') as fp:
-            cs = self.gl.compute_shader(fp.read())
+            context = fp.read()
+
+        for k, v in inject.items():
+            context = context.replace(k, v)
+
+        cs = self.gl.compute_shader(context)
 
         if "u_width" in cs:
             cs["u_width"].value = self.W
@@ -34,10 +41,10 @@ class Base(object):
         return cs
 
     def in_node(self, in_node: 'Base'):
-        raise NotImplemented
+        raise NotImplementedError("Do not use Base node directly")
 
     def out_node(self) -> 'Base':
-        raise NotImplemented
+        raise NotImplementedError("Do not use Base node directly")
 
 
 class Init(Base):
@@ -50,3 +57,22 @@ class Init(Base):
 
     def out_node(self):
         return np.zeros((self.W, self.H, 4))
+
+
+if __name__ == "__main__":
+
+    GL = mg.create_standalone_context()
+
+    class BaseTest(unittest.TestCase):
+
+        def test_init(self):
+            init = Init(gl=GL)
+
+            # should not use base node directly
+            with self.assertRaises(RuntimeError):
+                init.in_node(init)
+
+            cs = init.get_cs("gl/add.glsl")
+            self.assertIsInstance(cs, mg.compute_shader.ComputeShader)
+
+    unittest.main()
