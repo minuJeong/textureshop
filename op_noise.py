@@ -11,15 +11,13 @@ from util import cpu_noise
 class CPURandom(Base):
     """ simple uniform random (using CPU) """
 
+    @Base.in_node_wrapper
     def in_node(self, in_node, min_value=0.0, max_value=1.0):
-        self.W, self.H = in_node.W, in_node.H
         self.min_value, self.max_value = min_value, max_value
-        return self
 
+    @Base.out_node_wrapper
     def out_node(self):
-        noised = np.random.uniform(
-            self.min_value, self.max_value, (self.W, self.H, 4))
-        return noised.astype(np.float32)
+        return np.random.uniform(self.min_value, self.max_value, (self.W, self.H, 4))
 
 
 class FBMNoise(Base):
@@ -51,11 +49,11 @@ class FBMNoise(Base):
         raise NotImplementedError(
             "setting noise from {} is not implemented".format(type(noise_tex)))
 
-    def in_node(self, in_node, noise_tex=None):
-        self.W, self.H = in_node.W, in_node.H
-
+    @Base.in_node_wrapper
+    def in_node(self, in_node, noise_tex=None, num_octaves=5):
         cs_path = "./gl/fbm_noise.glsl"
         self.cs = self.get_cs(cs_path)
+        self.cs["u_octaves"].value = num_octaves
 
         if noise_tex is not None:
             self.set_noisetex(noise_tex)
@@ -65,8 +63,7 @@ class FBMNoise(Base):
             cpu_noise_data = cpu_noise(self.W, self.H)
             self.set_noisetex(cpu_noise_data, (self.W, self.H))
 
-        return self
-
+    @Base.out_node_wrapper
     def out_node(self):
         self.u_noise_tex.use(0)
 
@@ -79,7 +76,15 @@ class FBMNoise(Base):
         gx, gy = math.ceil(self.W / 32), math.ceil(self.H / 32)
         self.cs.run(gx, gy)
 
-        data = self.cs_out.read()
-        data = np.frombuffer(data, dtype="f4")
-        data = data.reshape((self.W, self.H, 4))
-        return data
+        return self.cs_out.read()
+
+
+class GaussianBlur(Base):
+
+    @Base.in_node_wrapper
+    def in_node(self, in_node, values, deviation_h=5, deviation_v=5):
+        pass
+
+    @Base.out_node_wrapper
+    def out_node(self):
+        return []

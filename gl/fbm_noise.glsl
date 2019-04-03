@@ -15,6 +15,7 @@ uniform sampler2D u_noise_tex;
 
 uniform int u_width;
 uniform int u_height;
+uniform int u_octaves;
 
 
 float fbm(vec2 x, int octaves)
@@ -47,7 +48,7 @@ void main()
     }
 
     vec2 nuv = uv * 0.01;
-    float n = fbm(nuv, 5);
+    float n = fbm(nuv, u_octaves);
 
     n = clamp(n, 0.0, 1.0);
 

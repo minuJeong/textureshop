@@ -1,5 +1,6 @@
 
-import unittest
+import os
+from functools import wraps
 
 import numpy as np
 import moderngl as mg
@@ -23,8 +24,30 @@ class Base(object):
                 print("[Base] New GL context with id: {}".format(id(self.gl)))
         Base.GL = self.gl
 
+    @staticmethod
+    def in_node_wrapper(f):
+        @wraps(f)
+        def _(self, in_node, *args, **kargs):
+            self.W, self.H = in_node.W, in_node.H
+            f(self, in_node, *args, **kargs)
+            return self
+        return _
+
+    @staticmethod
+    def out_node_wrapper(f):
+        @wraps(f)
+        def _(self):
+            data = f(self)
+            data = np.frombuffer(data, dtype="f4")
+            data = data.reshape((self.W, self.H, 4))
+            return data
+        return _
+
     def get_cs(self, cs_path, inject={}):
         context = None
+        if not os.path.isabs(cs_path):
+            dirpath = os.path.dirname(__file__)
+            cs_path = "{}/{}".format(dirpath, cs_path)
         with open(cs_path, 'r') as fp:
             context = fp.read()
 
@@ -57,22 +80,3 @@ class Init(Base):
 
     def out_node(self):
         return np.zeros((self.W, self.H, 4))
-
-
-if __name__ == "__main__":
-
-    GL = mg.create_standalone_context()
-
-    class BaseTest(unittest.TestCase):
-
-        def test_init(self):
-            init = Init(gl=GL)
-
-            # should not use base node directly
-            with self.assertRaises(RuntimeError):
-                init.in_node(init)
-
-            cs = init.get_cs("gl/add.glsl")
-            self.assertIsInstance(cs, mg.compute_shader.ComputeShader)
-
-    unittest.main()

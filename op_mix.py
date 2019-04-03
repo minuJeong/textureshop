@@ -10,8 +10,8 @@ from util import _value_to_ndarray
 class Mix(Base):
     """ mix(a, b, k) """
 
+    @Base.in_node_wrapper
     def in_node(self, in_node, in_a, in_b, in_c):
-        self.W, self.H = in_node.W, in_node.H
         self.in_a = _value_to_ndarray(in_a, self.W, self.H)
         self.in_b = _value_to_ndarray(in_b, self.W, self.H)
         self.in_c = _value_to_ndarray(in_c, self.W, self.H)
@@ -19,8 +19,7 @@ class Mix(Base):
         cs_path = "./gl/mix.glsl"
         self.cs = self.get_cs(cs_path, {"%CALC%": "_mix"})
 
-        return self
-
+    @Base.out_node_wrapper
     def out_node(self):
         a_buffer = self.in_a.astype(np.float32)
         b_buffer = self.in_b.astype(np.float32)
@@ -42,17 +41,14 @@ class Mix(Base):
         gx, gy = math.ceil(self.W / 32), math.ceil(self.H / 32)
         self.cs.run(gx, gy)
 
-        data = self.cs_out.read()
-        data = np.frombuffer(data, dtype="f4")
-        data = data.reshape((self.W, self.H, 4))
-        return data
+        return self.cs_out.read()
 
 
 class Smoothstep(Base):
     """ smoothstep(a, b, x) """
 
+    @Base.in_node_wrapper
     def in_node(self, in_node, in_a, in_b, in_c):
-        self.W, self.H = in_node.W, in_node.H
         self.in_a = _value_to_ndarray(in_a, self.W, self.H)
         self.in_b = _value_to_ndarray(in_b, self.W, self.H)
         self.in_c = _value_to_ndarray(in_c, self.W, self.H)
@@ -60,8 +56,7 @@ class Smoothstep(Base):
         cs_path = "./gl/mix.glsl"
         self.cs = self.get_cs(cs_path, {"%CALC%": "_smoothstep"})
 
-        return self
-
+    @Base.out_node_wrapper
     def out_node(self):
         a_buffer = self.in_a.astype(np.float32)
         b_buffer = self.in_b.astype(np.float32)
@@ -83,7 +78,4 @@ class Smoothstep(Base):
         gx, gy = math.ceil(self.W / 32), math.ceil(self.H / 32)
         self.cs.run(gx, gy)
 
-        data = self.cs_out.read()
-        data = np.frombuffer(data, dtype="f4")
-        data = data.reshape((self.W, self.H, 4))
-        return data
+        return self.cs_out.read()
