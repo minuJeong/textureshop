@@ -4,12 +4,26 @@ import math
 import moderngl as mg
 import numpy as np
 
-from base import Base
+from op_base import Base
 from util import cpu_noise
 
 
+class CPURandom(Base):
+    """ simple uniform random (using CPU) """
+
+    def in_node(self, in_node, min_value=0.0, max_value=1.0):
+        self.W, self.H = in_node.W, in_node.H
+        self.min_value, self.max_value = min_value, max_value
+        return self
+
+    def out_node(self):
+        noised = np.random.uniform(
+            self.min_value, self.max_value, (self.W, self.H, 4))
+        return noised.astype(np.float32)
+
+
 class FBMNoise(Base):
-    """Fractional brownian motion noise"""
+    """ fractional brownian motion noise """
 
     def set_noisetex(self, noise_tex, bytes_size=None):
         if isinstance(noise_tex, type(mg.texture)):
