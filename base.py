@@ -18,11 +18,13 @@ class Base(object):
                 self.gl = Base.GL
             else:
                 self.gl = mg.create_standalone_context()
-                print("new GL context with id: {}".format(id(self.gl)))
+                print("[Base] New GL context with id: {}".format(id(self.gl)))
         Base.GL = self.gl
 
     def get_cs(self, cs_path):
-        cs = self.gl.compute_shader(open(cs_path).read())
+        cs = None
+        with open(cs_path, 'r') as fp:
+            cs = self.gl.compute_shader(fp.read())
 
         if "u_width" in cs:
             cs["u_width"].value = self.W

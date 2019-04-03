@@ -23,7 +23,7 @@ float fbm(vec2 x, int octaves)
     float a = 0.5;
     vec2 shift = vec2(100);
 
-    mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.50));
+    mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
     for (int i = 0; i < octaves; ++i)
     {
         v += a * texture(u_noise_tex, x).x;
