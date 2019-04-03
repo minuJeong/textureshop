@@ -4,24 +4,9 @@ import math
 import numpy as np
 import moderngl as mg
 
+from base import Init
 from base import Base
-
-
-def _value_to_ndarray(value, w, h):
-    converted = None
-    if isinstance(value, (np.ndarray)):
-        converted = value
-
-    elif isinstance(value, (float, int)):
-        value = float(value)
-        arr = np.ones((w, h, 4))
-        converted = np.multiply(arr, value)
-
-    else:
-        raise NotADirectoryError(
-            "[Clamp] given value type {} is not implemented".format(type(value)))
-
-    return converted
+from util import _value_to_ndarray
 
 
 class Num(Base):
@@ -321,6 +306,72 @@ class Tan(Base):
         return data
 
 
+class Asin(Base):
+    """ asin(x) """
+
+    def in_node(self, in_node, value):
+        self.W, self.H = in_node.W, in_node.H
+
+        self.value = _value_to_ndarray(value, self.W, self.H)
+
+        cs_path = "./gl/math.glsl"
+        self.cs = self.get_cs(cs_path, {"%CALC%": "_asin"})
+
+        return self
+
+    def out_node(self):
+        out_buffer = np.zeros((self.W, self.H, 4))
+        out_buffer = out_buffer.astype(np.float32)
+        self.cs_out = self.gl.buffer(out_buffer.tobytes())
+        self.cs_out.bind_to_storage_buffer(0)
+
+        in_buffer = self.value.astype(np.float32)
+        in_buffer = self.gl.buffer(in_buffer.tobytes())
+        in_buffer.bind_to_storage_buffer(1)
+
+        gx, gy = math.ceil(self.W / 32), math.ceil(self.H / 32)
+
+        self.cs.run(gx, gy)
+
+        data = self.cs_out.read()
+        data = np.frombuffer(data, dtype="f4")
+        data = data.reshape((self.W, self.H, 4))
+        return data
+
+
+class Acos(Base):
+    """ acos(x) """
+
+    def in_node(self, in_node, value):
+        self.W, self.H = in_node.W, in_node.H
+
+        self.value = _value_to_ndarray(value, self.W, self.H)
+
+        cs_path = "./gl/math.glsl"
+        self.cs = self.get_cs(cs_path, {"%CALC%": "_acos"})
+
+        return self
+
+    def out_node(self):
+        out_buffer = np.zeros((self.W, self.H, 4))
+        out_buffer = out_buffer.astype(np.float32)
+        self.cs_out = self.gl.buffer(out_buffer.tobytes())
+        self.cs_out.bind_to_storage_buffer(0)
+
+        in_buffer = self.value.astype(np.float32)
+        in_buffer = self.gl.buffer(in_buffer.tobytes())
+        in_buffer.bind_to_storage_buffer(1)
+
+        gx, gy = math.ceil(self.W / 32), math.ceil(self.H / 32)
+
+        self.cs.run(gx, gy)
+
+        data = self.cs_out.read()
+        data = np.frombuffer(data, dtype="f4")
+        data = data.reshape((self.W, self.H, 4))
+        return data
+
+
 class Atan2(Base):
     """ atan2(y, x) """
 
@@ -356,11 +407,205 @@ class Atan2(Base):
         return data
 
 
+class SinH(Base):
+    """ acos(x) """
+
+    def in_node(self, in_node, value):
+        self.W, self.H = in_node.W, in_node.H
+
+        self.value = _value_to_ndarray(value, self.W, self.H)
+
+        cs_path = "./gl/math.glsl"
+        self.cs = self.get_cs(cs_path, {"%CALC%": "_sinh"})
+
+        return self
+
+    def out_node(self):
+        out_buffer = np.zeros((self.W, self.H, 4))
+        out_buffer = out_buffer.astype(np.float32)
+        self.cs_out = self.gl.buffer(out_buffer.tobytes())
+        self.cs_out.bind_to_storage_buffer(0)
+
+        in_buffer = self.value.astype(np.float32)
+        in_buffer = self.gl.buffer(in_buffer.tobytes())
+        in_buffer.bind_to_storage_buffer(1)
+
+        gx, gy = math.ceil(self.W / 32), math.ceil(self.H / 32)
+
+        self.cs.run(gx, gy)
+
+        data = self.cs_out.read()
+        data = np.frombuffer(data, dtype="f4")
+        data = data.reshape((self.W, self.H, 4))
+        return data
+
+
+class CosH(Base):
+    """ acos(x) """
+
+    def in_node(self, in_node, value):
+        self.W, self.H = in_node.W, in_node.H
+
+        self.value = _value_to_ndarray(value, self.W, self.H)
+
+        cs_path = "./gl/math.glsl"
+        self.cs = self.get_cs(cs_path, {"%CALC%": "_cosh"})
+
+        return self
+
+    def out_node(self):
+        out_buffer = np.zeros((self.W, self.H, 4))
+        out_buffer = out_buffer.astype(np.float32)
+        self.cs_out = self.gl.buffer(out_buffer.tobytes())
+        self.cs_out.bind_to_storage_buffer(0)
+
+        in_buffer = self.value.astype(np.float32)
+        in_buffer = self.gl.buffer(in_buffer.tobytes())
+        in_buffer.bind_to_storage_buffer(1)
+
+        gx, gy = math.ceil(self.W / 32), math.ceil(self.H / 32)
+
+        self.cs.run(gx, gy)
+
+        data = self.cs_out.read()
+        data = np.frombuffer(data, dtype="f4")
+        data = data.reshape((self.W, self.H, 4))
+        return data
+
+
+class TanH(Base):
+    """ acos(x) """
+
+    def in_node(self, in_node, value):
+        self.W, self.H = in_node.W, in_node.H
+
+        self.value = _value_to_ndarray(value, self.W, self.H)
+
+        cs_path = "./gl/math.glsl"
+        self.cs = self.get_cs(cs_path, {"%CALC%": "_tanh"})
+
+        return self
+
+    def out_node(self):
+        out_buffer = np.zeros((self.W, self.H, 4))
+        out_buffer = out_buffer.astype(np.float32)
+        self.cs_out = self.gl.buffer(out_buffer.tobytes())
+        self.cs_out.bind_to_storage_buffer(0)
+
+        in_buffer = self.value.astype(np.float32)
+        in_buffer = self.gl.buffer(in_buffer.tobytes())
+        in_buffer.bind_to_storage_buffer(1)
+
+        gx, gy = math.ceil(self.W / 32), math.ceil(self.H / 32)
+
+        self.cs.run(gx, gy)
+
+        data = self.cs_out.read()
+        data = np.frombuffer(data, dtype="f4")
+        data = data.reshape((self.W, self.H, 4))
+        return data
+
+
+class Power(Base):
+    """ pow(a, b) """
+
+    def in_node(self, in_node, in_a, in_b):
+        self.W, self.H = in_node.W, in_node.H
+        self.in_a = _value_to_ndarray(in_a, self.W, self.H)
+        self.in_b = _value_to_ndarray(in_b, self.W, self.H)
+
+        cs_path = "./gl/math.glsl"
+        self.cs = self.get_cs(cs_path, {"%CALC%": "_pow"})
+
+        return self
+
+    def out_node(self):
+        a_buffer = self.in_a.astype(np.float32)
+        b_buffer = self.in_b.astype(np.float32)
+        out_buffer = np.zeros((self.W, self.H, 4))
+        out_buffer = out_buffer.astype(np.float32)
+
+        self.cs_in_a = self.gl.buffer(a_buffer.tobytes())
+        self.cs_in_a.bind_to_storage_buffer(1)
+        self.cs_in_b = self.gl.buffer(b_buffer.tobytes())
+        self.cs_in_b.bind_to_storage_buffer(2)
+        self.cs_out = self.gl.buffer(out_buffer.tobytes())
+        self.cs_out.bind_to_storage_buffer(0)
+
+        gx, gy = math.ceil(self.W / 32), math.ceil(self.H / 32)
+        self.cs.run(gx, gy)
+
+        data = self.cs_out.read()
+        data = np.frombuffer(data, dtype="f4")
+        data = data.reshape((self.W, self.H, 4))
+        return data
+
+
+class Log_Natural(Base):
+    """ log(a) """
+
+    def in_node(self, in_node, in_a):
+        self.W, self.H = in_node.W, in_node.H
+        self.in_a = _value_to_ndarray(in_a, self.W, self.H)
+
+        cs_path = "./gl/math.glsl"
+        self.cs = self.get_cs(cs_path, {"%CALC%": "_log"})
+
+        return self
+
+    def out_node(self):
+        a_buffer = self.in_a.astype(np.float32)
+        out_buffer = np.zeros((self.W, self.H, 4))
+        out_buffer = out_buffer.astype(np.float32)
+
+        self.cs_in_a = self.gl.buffer(a_buffer.tobytes())
+        self.cs_in_a.bind_to_storage_buffer(1)
+        self.cs_out = self.gl.buffer(out_buffer.tobytes())
+        self.cs_out.bind_to_storage_buffer(0)
+
+        gx, gy = math.ceil(self.W / 32), math.ceil(self.H / 32)
+        self.cs.run(gx, gy)
+
+        data = self.cs_out.read()
+        data = np.frombuffer(data, dtype="f4")
+        data = data.reshape((self.W, self.H, 4))
+        return data
+
+
+class Log_2(Base):
+    """ log(a) """
+
+    def in_node(self, in_node, in_a):
+        self.W, self.H = in_node.W, in_node.H
+        self.in_a = _value_to_ndarray(in_a, self.W, self.H)
+
+        cs_path = "./gl/math.glsl"
+        self.cs = self.get_cs(cs_path, {"%CALC%": "_log2"})
+
+        return self
+
+    def out_node(self):
+        a_buffer = self.in_a.astype(np.float32)
+        out_buffer = np.zeros((self.W, self.H, 4))
+        out_buffer = out_buffer.astype(np.float32)
+
+        self.cs_in_a = self.gl.buffer(a_buffer.tobytes())
+        self.cs_in_a.bind_to_storage_buffer(1)
+        self.cs_out = self.gl.buffer(out_buffer.tobytes())
+        self.cs_out.bind_to_storage_buffer(0)
+
+        gx, gy = math.ceil(self.W / 32), math.ceil(self.H / 32)
+        self.cs.run(gx, gy)
+
+        data = self.cs_out.read()
+        data = np.frombuffer(data, dtype="f4")
+        data = data.reshape((self.W, self.H, 4))
+        return data
+
+
 if __name__ == "__main__":
 
     import unittest
-
-    from base import Init
 
     GL = mg.create_standalone_context()
     init = Init(size=(1, 1), gl=GL)
@@ -470,48 +715,137 @@ if __name__ == "__main__":
             self.assertIsInstance(oneminus_a, np.ndarray)
             self.assertIsInstance(oneminus_b, np.ndarray)
 
-        def test_trigonometries(self):
-            print("[+] Testing trigonometries node")
+        def test_basic_trigonometries(self):
+            print("[+] Testing basic trigonometries node")
 
-            print("[+][+] Testing sin..")
+            # accpet error less than 0.0001
+            PATIENCE = 1e-4
+
+            print("\t[+][+] Testing sin..")
             sin_a = Sin().in_node(init, 0.00).out_node()
             sin_b = Sin().in_node(init, 0.75).out_node()
             sin_c = Sin().in_node(init, 1.50).out_node()
             sin_d = Sin().in_node(init, 222.0).out_node()
-            self.assertLess(abs(sin_a[0, 0, 0] - math.sin(0.00)), 1e-4)
-            self.assertLess(abs(sin_b[0, 0, 0] - math.sin(0.75)), 1e-4)
-            self.assertLess(abs(sin_c[0, 0, 0] - math.sin(1.50)), 1e-4)
-            self.assertLess(abs(sin_d[0, 0, 0] - math.sin(222.0)), 1e-4)
+            self.assertLess(abs(sin_a[0, 0, 0] - math.sin(0.00)), PATIENCE)
+            self.assertLess(abs(sin_b[0, 0, 0] - math.sin(0.75)), PATIENCE)
+            self.assertLess(abs(sin_c[0, 0, 0] - math.sin(1.50)), PATIENCE)
+            self.assertLess(abs(sin_d[0, 0, 0] - math.sin(222.0)), PATIENCE)
 
-            print("[+][+] Testing cos..")
+            print("\t[+][+] Testing cos..")
             cos_a = Cos().in_node(init, 0.00).out_node()
             cos_b = Cos().in_node(init, 0.75).out_node()
             cos_c = Cos().in_node(init, 1.50).out_node()
             cos_d = Cos().in_node(init, 222.0).out_node()
-            self.assertLess(abs(cos_a[0, 0, 0] - math.cos(0.00)), 1e-4)
-            self.assertLess(abs(cos_b[0, 0, 0] - math.cos(0.75)), 1e-4)
-            self.assertLess(abs(cos_c[0, 0, 0] - math.cos(1.50)), 1e-4)
-            self.assertLess(abs(cos_d[0, 0, 0] - math.cos(222.0)), 1e-4)
+            self.assertLess(abs(cos_a[0, 0, 0] - math.cos(0.00)), PATIENCE)
+            self.assertLess(abs(cos_b[0, 0, 0] - math.cos(0.75)), PATIENCE)
+            self.assertLess(abs(cos_c[0, 0, 0] - math.cos(1.50)), PATIENCE)
+            self.assertLess(abs(cos_d[0, 0, 0] - math.cos(222.0)), PATIENCE)
 
-            print("[+][+] Testing tan..")
+            print("\t[+][+] Testing tan..")
             tan_a = Tan().in_node(init, 0.00).out_node()
             tan_b = Tan().in_node(init, 0.75).out_node()
             tan_c = Tan().in_node(init, 1.50).out_node()
             tan_d = Tan().in_node(init, 222.0).out_node()
-            self.assertLess(abs(tan_a[0, 0, 0] - math.tan(0.00)), 1e-4)
-            self.assertLess(abs(tan_b[0, 0, 0] - math.tan(0.75)), 1e-4)
-            self.assertLess(abs(tan_c[0, 0, 0] - math.tan(1.50)), 1e-4)
-            self.assertLess(abs(tan_d[0, 0, 0] - math.tan(222.0)), 1e-4)
+            self.assertLess(abs(tan_a[0, 0, 0] - math.tan(0.00)), PATIENCE)
+            self.assertLess(abs(tan_b[0, 0, 0] - math.tan(0.75)), PATIENCE)
+            self.assertLess(abs(tan_c[0, 0, 0] - math.tan(1.50)), PATIENCE)
+            self.assertLess(abs(tan_d[0, 0, 0] - math.tan(222.0)), PATIENCE)
 
-            print("[+][+] Testing atan2..")
+        def test_arc_trigonometries(self):
+            print("[+] Testing arc trigonometries node")
+
+            # accpet error less than 0.0001
+            PATIENCE = 1e-4
+
+            print("[+][+] Testing asin..")
+            asin_a = Asin().in_node(init, 1.0).out_node()
+            asin_b = Asin().in_node(init, 0.1).out_node()
+            asin_c = Asin().in_node(init, -1.0).out_node()
+            asin_d = Asin().in_node(init, -0.5).out_node()
+
+            self.assertLess(abs(asin_a[0, 0, 0] - math.asin(1.0)), PATIENCE)
+            self.assertLess(abs(asin_b[0, 0, 0] - math.asin(0.1)), PATIENCE)
+            self.assertLess(abs(asin_c[0, 0, 0] - math.asin(-1.0)), PATIENCE)
+            self.assertLess(abs(asin_d[0, 0, 0] - math.asin(-0.5)), PATIENCE)
+
+            print("\t[+][+] Testing acos..")
+            acos_a = Acos().in_node(init, 1.0).out_node()
+            acos_b = Acos().in_node(init, 0.1).out_node()
+            acos_c = Acos().in_node(init, -1.0).out_node()
+            acos_d = Acos().in_node(init, -0.5).out_node()
+
+            self.assertLess(abs(acos_a[0, 0, 0] - math.acos(1.0)), PATIENCE)
+            self.assertLess(abs(acos_b[0, 0, 0] - math.acos(0.1)), PATIENCE)
+            self.assertLess(abs(acos_c[0, 0, 0] - math.acos(-1.0)), PATIENCE)
+            self.assertLess(abs(acos_d[0, 0, 0] - math.acos(-0.5)), PATIENCE)
+
+            print("\t[+][+] Testing atan2..")
             atan2_a = Atan2().in_node(init, 1.0, 2.0).out_node()
             atan2_b = Atan2().in_node(init, 0.1, 23.2).out_node()
             atan2_c = Atan2().in_node(init, 10.5, 0.11).out_node()
             atan2_d = Atan2().in_node(init, -100.0, 0.0).out_node()
 
-            self.assertLess(abs(atan2_a[0, 0, 0] - math.atan2(1.0, 2.0)), 1e-4)
-            self.assertLess(abs(atan2_b[0, 0, 0] - math.atan2(0.1, 23.2)), 1e-4)
-            self.assertLess(abs(atan2_c[0, 0, 0] - math.atan2(10.5, 0.11)), 1e-4)
-            self.assertLess(abs(atan2_d[0, 0, 0] - math.atan2(-100.0, 0.0)), 1e-4)
+            self.assertLess(abs(atan2_a[0, 0, 0] - math.atan2(1.0, 2.0)), PATIENCE)
+            self.assertLess(abs(atan2_b[0, 0, 0] - math.atan2(0.1, 23.2)), PATIENCE)
+            self.assertLess(abs(atan2_c[0, 0, 0] - math.atan2(10.5, 0.11)), PATIENCE)
+            self.assertLess(abs(atan2_d[0, 0, 0] - math.atan2(-100.0, 0.0)), PATIENCE)
+
+        def test_hyperbolic_trigonometries(self):
+            print("[+] Testing hyperbolic trigonometries node")
+
+            # accpet error less than 0.0001
+            PATIENCE = 1e-4
+
+            print("\t[+][+] Testing sinh..")
+            sinh_a = SinH().in_node(init, 1.0).out_node()
+            sinh_b = SinH().in_node(init, 0.1).out_node()
+            sinh_c = SinH().in_node(init, 2.0).out_node()
+
+            self.assertLess(abs(sinh_a[0, 0, 0] - math.sinh(1.0)), PATIENCE)
+            self.assertLess(abs(sinh_b[0, 0, 0] - math.sinh(0.1)), PATIENCE)
+            self.assertLess(abs(sinh_c[0, 0, 0] - math.sinh(2.0)), PATIENCE)
+
+            print("\t[+][+] Testing cosh..")
+            cosh_a = CosH().in_node(init, 1.0).out_node()
+            cosh_b = CosH().in_node(init, 0.1).out_node()
+            cosh_c = CosH().in_node(init, 2.0).out_node()
+
+            self.assertLess(abs(cosh_a[0, 0, 0] - math.cosh(1.0)), PATIENCE)
+            self.assertLess(abs(cosh_b[0, 0, 0] - math.cosh(0.1)), PATIENCE)
+            self.assertLess(abs(cosh_c[0, 0, 0] - math.cosh(2.0)), PATIENCE)
+
+            print("\t[+][+] Testing tanh..")
+            tanh_a = TanH().in_node(init, 1.0).out_node()
+            tanh_b = TanH().in_node(init, 0.1).out_node()
+            tanh_c = TanH().in_node(init, 2.0).out_node()
+
+            self.assertLess(abs(tanh_a[0, 0, 0] - math.tanh(1.0)), PATIENCE)
+            self.assertLess(abs(tanh_b[0, 0, 0] - math.tanh(0.1)), PATIENCE)
+            self.assertLess(abs(tanh_c[0, 0, 0] - math.tanh(2.0)), PATIENCE)
+
+        def test_power_log(self):
+            print("[+] Testing power/log node")
+
+            pow_a = Power().in_node(init, 2.0, 2.0).out_node()
+            pow_b = Power().in_node(init, 1.1, 10.0).out_node()
+            pow_c = Power().in_node(init, 2.0, 10.0).out_node()
+            pow_d = Power().in_node(init, 5.3, 2.1).out_node()
+
+            self.assertTrue(np.all(np.isclose(pow_a, np.power(2.0, 2.0))))
+            self.assertTrue(np.all(np.isclose(pow_b, np.power(1.1, 10.0))))
+            self.assertTrue(np.all(np.isclose(pow_c, np.power(2.0, 10.0))))
+            self.assertTrue(np.all(np.isclose(pow_d, np.power(5.3, 2.1))))
+
+            log_a = Log_Natural().in_node(init, 12.53).out_node()
+            log_b = Log_Natural().in_node(init, 22.23).out_node()
+
+            self.assertTrue(np.all(np.isclose(log_a, np.log(12.53))))
+            self.assertTrue(np.all(np.isclose(log_b, np.log(22.23))))
+
+            log2_a = Log_2().in_node(init, 12.53).out_node()
+            log2_b = Log_2().in_node(init, 22.23).out_node()
+
+            self.assertTrue(np.all(np.isclose(log2_a, np.log2(12.53))))
+            self.assertTrue(np.all(np.isclose(log2_b, np.log2(22.23))))
 
     unittest.main()

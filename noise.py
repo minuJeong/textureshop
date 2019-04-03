@@ -29,7 +29,7 @@ class FBMNoise(Base):
 
         if isinstance(noise_tex, (bytes, bytearray)):
             if not bytes_size:
-                raise Exception("noise_tex coming in with bytes, but size not specified")
+                raise Exception("[FBM Noise] noise_tex coming in with bytes, but size not specified")
                 return
             self.u_noise_tex = self.gl.texture(bytes_size, 4, noise_tex, dtype="f4")
             return
@@ -47,7 +47,7 @@ class FBMNoise(Base):
             self.set_noisetex(noise_tex)
 
         if not hasattr(self, "u_noise_tex"):
-            print("[FBM Noise] noise texture not coming in, using cpu noise.")
+            print("[FBM Noise] noise texture not coming in, generate cpu noise as base.")
             cpu_noise_data = cpu_noise(self.W, self.H)
             self.set_noisetex(cpu_noise_data, (self.W, self.H))
 

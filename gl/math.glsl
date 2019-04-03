@@ -74,9 +74,49 @@ vec4 _tan(vec4 a, vec4 b)
     return tan(a);
 }
 
+vec4 _asin(vec4 a, vec4 b)
+{
+    return asin(a);
+}
+
+vec4 _acos(vec4 a, vec4 b)
+{
+    return acos(a);
+}
+
 vec4 _atan2(vec4 a, vec4 b)
 {
     return atan(a, b);
+}
+
+vec4 _cosh(vec4 a, vec4 b)
+{
+    return cosh(a);
+}
+
+vec4 _sinh(vec4 a, vec4 b)
+{
+    return sinh(a);
+}
+
+vec4 _tanh(vec4 a, vec4 b)
+{
+    return tanh(a);
+}
+
+vec4 _pow(vec4 a, vec4 b)
+{
+    return pow(a, b);
+}
+
+vec4 _log(vec4 a, vec4 b)
+{
+    return log(a);
+}
+
+vec4 _log2(vec4 a, vec4 b)
+{
+    return log2(a);
 }
 
 void main()

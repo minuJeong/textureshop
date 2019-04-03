@@ -23,3 +23,20 @@ def npwrite(path: str, data: np.ndarray):
     data = np.multiply(data, 255.0)
     data = data.astype(np.uint8)
     ii.imwrite(path, data)
+
+
+def _value_to_ndarray(value, w, h):
+    converted = None
+    if isinstance(value, (np.ndarray)):
+        converted = value
+
+    elif isinstance(value, (float, int)):
+        value = float(value)
+        arr = np.ones((w, h, 4))
+        converted = np.multiply(arr, value)
+
+    else:
+        raise NotADirectoryError(
+            "[Clamp] given value type {} is not implemented".format(type(value)))
+
+    return converted
