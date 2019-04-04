@@ -19,13 +19,24 @@ def cpu_noise(w, h):
     return np.random.uniform(0.0, 1.0, (w, h, 4))
 
 
-def npwrite(path: str, data: np.ndarray):
+def _serialize_data_for_output(data):
+    data = data[::-1]
     data = np.multiply(data, 255.0)
     data = data.astype(np.uint8)
+    return data
+
+
+def npwrite(path, data: np.ndarray):
+    data = _serialize_data_for_output(data)
     ii.imwrite(path, data)
 
 
-def _value_to_ndarray(value, w, h):
+def npappend(writer, data: np.ndarray):
+    data = _serialize_data_for_output(data)
+    writer.append_data(data)
+
+
+def _value_to_ndarray(value, w: int, h: int):
     converted = None
     if isinstance(value, (np.ndarray)):
         converted = value
