@@ -34,9 +34,9 @@ uniform int u_width;
 uniform int u_height;
 uniform int u_maxsteps;
 
-uniform vec3 u_lightpos = vec3(1.0, 1.0, 0.0);
 uniform vec3 u_campos = vec3(0.0, 0.5, -5.0);
 uniform vec3 u_camtarget = vec3(0.0, 0.0, 0.0);
+uniform vec3 u_lightpos = vec3(1.0, 1.0, 0.0);
 
 bool w_need_color = false;
 vec3 w_color;

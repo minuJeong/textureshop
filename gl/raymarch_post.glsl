@@ -38,9 +38,16 @@ layout(binding=0) buffer out_color
 uniform int u_width;
 uniform int u_height;
 
+uniform vec3 u_campos = vec3(0.0, 0.5, -5.0);
+uniform vec3 u_camtarget = vec3(0.0, 0.0, 0.0);
 uniform vec3 u_lightpos;
 uniform float u_shadow_intensity;
 
+
+vec3 BXDF(float depth, vec3 color, vec3 normal, float shadow)
+{
+%BXDF%
+}
 
 void main()
 {
@@ -61,14 +68,7 @@ void main()
     vec3 color = i_col[i].xyz;
     vec3 normal = i_nrm[i].xyz;
     float shadow = i_shw[i].x;
-
-    vec3 L = normalize(u_lightpos);
-    float ndl = dot(normal, L);
-    ndl = max(ndl, 0.0);
-
-    float shadow_value = clamp(shadow, 0.0, 1.0);
-    float shadow_influence = mix(1.0, shadow, u_shadow_intensity);
-    vec3 rgb = color * ndl * shadow_influence;
+    vec3 rgb = BXDF(depth, color, normal, shadow);
 
     o_col[i].xyz = rgb;
     o_col[i].w = 1.0;

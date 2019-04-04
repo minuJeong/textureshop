@@ -6,12 +6,25 @@ import numpy as np
 from op_base import Base
 
 
+class LightInfo(object):
+    u_lightpos = (2.0, 4.0, 3.0)
+    u_shadow_intensity = 0.35
+
+
+class GBuffer(object):
+    depth = None
+    color = None
+    normal = None
+    shadow = None
+
+
+class CameraInfo(object):
+    u_campos = (0.0, 0.5, -5.0)
+    u_camtarget = (0.0, 0.0, 0.0)
+
+
 class Raymarch(Base):
     """ raymarch node """
-
-    class CameraInfo(object):
-        u_campos = (0.0, 0.5, -5.0)
-        u_camtarget = (0.0, 0.0, 0.0)
 
     @Base.in_node_wrapper
     def in_node(self, in_node, distance_field, lightinfo=None, caminfo=None, steps=64):
@@ -36,7 +49,7 @@ class Raymarch(Base):
         self.normal = self.gl.buffer(_buffer)
         self.shadow = self.gl.buffer(_buffer)
 
-        self.g_buffer = DeferredLight.GBuffer()
+        self.g_buffer = GBuffer()
         self.g_buffer.depth = self.depth
         self.g_buffer.color = self.color
         self.g_buffer.normal = self.normal
@@ -44,7 +57,7 @@ class Raymarch(Base):
 
     def set_caminfo(self, caminfo=None):
         if not caminfo:
-            caminfo = Raymarch.CameraInfo()
+            caminfo = CameraInfo()
 
         if "u_campos" in self.cs:
             self.cs["u_campos"].value = caminfo.u_campos
@@ -54,7 +67,7 @@ class Raymarch(Base):
 
     def set_lightinfo(self, lightinfo=None):
         if not lightinfo:
-            lightinfo = DeferredLight.LightInfo()
+            lightinfo = LightInfo()
 
         if "u_lightpos" in self.cs:
             self.cs["u_lightpos"].value = lightinfo.u_lightpos
@@ -73,20 +86,12 @@ class Raymarch(Base):
 
 class DeferredLight(Base):
 
-    class LightInfo(object):
-        u_lightpos = (2.0, 4.0, 3.0)
-        u_shadow_intensity = 0.35
-
-    class GBuffer(object):
-        depth = None
-        color = None
-        normal = None
-        shadow = None
-
     @Base.in_node_wrapper
-    def in_node(self, in_node, g_buffer, lightinfo):
+    def in_node(self, in_node, bxdf, g_buffer, lightinfo=None, caminfo=None):
         cs_post_path = "./gl/raymarch_post.glsl"
-        self.cs = self.get_cs(cs_post_path)
+        self.cs = self.get_cs(cs_post_path, {
+            "%BXDF%": bxdf
+        })
 
         _buffer = np.zeros((self.W, self.H, 4))
         _buffer = _buffer.astype(np.float32)
@@ -94,14 +99,25 @@ class DeferredLight(Base):
         self.post_out = self.gl.buffer(_buffer)
         self.set_g_buffer(g_buffer)
         self.set_lightinfo(lightinfo)
+        self.set_caminfo(caminfo)
 
     def set_lightinfo(self, lightinfo):
         if not lightinfo:
-            lightinfo = Raymarch.LightInfo()
+            lightinfo = LightInfo()
         if "u_lightpos" in self.cs:
             self.cs["u_lightpos"].value = lightinfo.u_lightpos
         if "u_shadow_intensity" in self.cs:
             self.cs["u_shadow_intensity"].value = lightinfo.u_shadow_intensity
+
+    def set_caminfo(self, caminfo=None):
+        if not caminfo:
+            caminfo = CameraInfo()
+
+        if "u_campos" in self.cs:
+            self.cs["u_campos"].value = caminfo.u_campos
+
+        if "u_camtarget" in self.cs:
+            self.cs["u_camtarget"].value = caminfo.u_camtarget
 
     def set_g_buffer(self, g_buffer):
         _buffer = np.zeros((self.W, self.H, 4))
@@ -109,7 +125,7 @@ class DeferredLight(Base):
         _buffer = _buffer.tobytes()
 
         if not g_buffer:
-            g_buffer = DeferredLight.GBuffer()
+            g_buffer = GBuffer()
             g_buffer.depth = self.gl.buffer(_buffer)
             g_buffer.color = self.gl.buffer(_buffer)
             g_buffer.normal = self.gl.buffer(_buffer)
@@ -201,19 +217,37 @@ return d;
 
 """
 
+
+bxdf = """
+vec3 L = normalize(u_lightpos);
+float ndl = dot(normal, L);
+ndl = max(ndl, 0.0);
+
+vec3 V = normalize(u_campos);
+
+vec3 H = L + V;
+H = normalize(H);
+
+float shadow_value = clamp(shadow, 0.0, 1.0);
+float shadow_influence = mix(1.0, shadow, u_shadow_intensity);
+
+vec3 rgb = color * ndl * shadow_influence;
+return rgb;
+"""
+
 init = Init((512, 512))
 steps = 32
 
-lightinfo = DeferredLight.LightInfo()
+lightinfo = LightInfo()
 lightinfo.u_lightpos = (-2.0, 3.0, -5.0)
 lightinfo.u_shadow_intensity = 0.25
 
-camerainfo = Raymarch.CameraInfo()
+caminfo = CameraInfo()
 
 import imageio as ii
 
-raymarch_node = Raymarch().in_node(init, dff, lightinfo, camerainfo, steps)
-light_node = DeferredLight().in_node(init, raymarch_node.out_node(), lightinfo)
+raymarch_node = Raymarch().in_node(init, dff, lightinfo, caminfo, steps)
+light_node = DeferredLight().in_node(init, bxdf, raymarch_node.out_node(), lightinfo, caminfo)
 output_writer = ii.get_writer("raymarched.mp4", fps=60)
 
 import time
@@ -223,9 +257,9 @@ for i in range(120):
     x = math.cos(t) * 7.0
     z = math.sin(t) * 7.0
 
-    camerainfo.u_campos = (x, 5.0, z)
-    camerainfo.u_camtarget = (0.0, 1.0, 0.0)
-    raymarch_node.set_caminfo(camerainfo)
+    caminfo.u_campos = (x, 5.0, z)
+    caminfo.u_camtarget = (0.0, 1.0, 0.0)
+    raymarch_node.set_caminfo(caminfo)
 
     # do raymarch
     g_buffer = raymarch_node.out_node()
