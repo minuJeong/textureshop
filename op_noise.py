@@ -1,4 +1,3 @@
-
 import math
 
 import moderngl as mg
@@ -17,7 +16,11 @@ class CPURandom(Base):
 
     @Base.out_node_wrapper
     def out_node(self):
-        return np.random.uniform(self.min_value, self.max_value, (self.W, self.H, 4))
+        min_v, max_v = self.min_value, self.max_value
+        size = (self.W, self.H, 4)
+        data = np.random.uniform(min_v, max_v, size)
+        data = data.astype(np.float32)
+        return data
 
 
 class FBMNoise(Base):
@@ -88,3 +91,26 @@ class GaussianBlur(Base):
     @Base.out_node_wrapper
     def out_node(self):
         return []
+
+
+class SumSineWave(Base):
+
+    @Base.in_node_wrapper
+    def in_node(self, in_node, octaves=12):
+        cs_path = "./gl/sumsinewave.glsl"
+        self.cs = self.get_cs(cs_path)
+
+        if "u_octaves" in self.cs:
+            self.cs["u_octaves"].value = octaves
+
+        self.out_height_2 = np.zeros((self.W, self.H, 4))
+        self.out_height_2 = self.out_height_2.astype(np.float32)
+        self.out_height_2 = self.gl.buffer(self.out_height_2.tobytes())
+
+    @Base.out_node_wrapper
+    def out_node(self):
+
+        gx, gy = math.ceil(self.W / 32), math.ceil(self.H / 32)
+        self.cs.run(gx, gy)
+
+        return self.out_height_2.read()

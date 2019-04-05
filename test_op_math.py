@@ -1,29 +1,11 @@
-
 import math
 import unittest
 
-import numpy as np
 import moderngl as mg
+import numpy as np
 
 from op_base import Init
-from op_math import Num
-from op_math import Add
-from op_math import Multiply
-from op_math import Divide
-from op_math import Clamp
-from op_math import OneMinus
-from op_math import Sin
-from op_math import Cos
-from op_math import Tan
-from op_math import Asin
-from op_math import Acos
-from op_math import Atan2
-from op_math import SinH
-from op_math import CosH
-from op_math import TanH
-from op_math import Power
-from op_math import Log_Natural
-from op_math import Log_2
+from op_math import Num, Add, Multiply, Divide, Clamp, OneMinus, Sin, Cos, Tan, Asin, Acos, Atan2, SinH, CosH, TanH, Power, Log_Natural, Log_2
 
 
 GL = mg.create_standalone_context()

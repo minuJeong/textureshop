@@ -1,9 +1,11 @@
-
 import math
+import time
 
+import imageio as ii
 import numpy as np
 
-from op_base import Base
+from op_base import Base, Init
+from util import npappend
 
 
 class LightInfo(object):
@@ -150,8 +152,6 @@ class DeferredLight(Base):
         return self.post_out.read()
 
 
-from op_base import Init
-from util import npappend
 
 
 dff = """
@@ -244,13 +244,11 @@ lightinfo.u_shadow_intensity = 0.25
 
 caminfo = CameraInfo()
 
-import imageio as ii
 
 raymarch_node = Raymarch().in_node(init, dff, lightinfo, caminfo, steps)
 light_node = DeferredLight().in_node(init, bxdf, raymarch_node.out_node(), lightinfo, caminfo)
 output_writer = ii.get_writer("raymarched.mp4", fps=60)
 
-import time
 start_time = time.time()
 for i in range(120):
     t = i * 0.052
