@@ -2,8 +2,8 @@ import math
 
 import numpy as np
 
-from op_base import Base
-from util import _value_to_ndarray
+from .op_base import Base
+from .util import _value_to_ndarray
 
 
 class Mix(Base):
@@ -70,6 +70,40 @@ class Smoothstep(Base):
         self.cs_in_b.bind_to_storage_buffer(2)
         self.cs_in_c = self.gl.buffer(c_buffer.tobytes())
         self.cs_in_c.bind_to_storage_buffer(3)
+
+        self.cs_out = self.gl.buffer(out_buffer.tobytes())
+        self.cs_out.bind_to_storage_buffer(0)
+
+        gx, gy = math.ceil(self.W / 32), math.ceil(self.H / 32)
+        self.cs.run(gx, gy)
+
+        return self.cs_out.read()
+
+
+class Rotate(Base):
+
+    @Base.in_node_wrapper
+    def in_node(self, in_node, in_a, z=0):
+        self.in_a = _value_to_ndarray(in_a, self.W, self.H)
+
+        cs_path = "./gl/mix.glsl"
+        self.cs = self.get_cs(cs_path, {"%CALC%": "_rotate"})
+
+        if "u_rot_z" in self.cs:
+            cz = math.cos(z)
+            sz = math.sin(z)
+            matrix_z = (cz, -sz, sz,  cz)
+            self.cs["u_rot_z"].value = matrix_z
+
+    @Base.out_node_wrapper
+    def out_node(self):
+        a_buffer = self.in_a.astype(np.float32)
+
+        out_buffer = np.zeros((self.W, self.H, 4))
+        out_buffer = out_buffer.astype(np.float32)
+
+        self.cs_in_a = self.gl.buffer(a_buffer.tobytes())
+        self.cs_in_a.bind_to_storage_buffer(1)
 
         self.cs_out = self.gl.buffer(out_buffer.tobytes())
         self.cs_out.bind_to_storage_buffer(0)

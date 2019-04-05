@@ -31,6 +31,8 @@ layout(binding=3) buffer c_buffer
 uniform int u_width;
 uniform int u_height;
 
+uniform mat2 u_rot_z;
+
 
 vec4 _mix(vec4 a, vec4 b, vec4 c)
 {
@@ -40,6 +42,19 @@ vec4 _mix(vec4 a, vec4 b, vec4 c)
 vec4 _smoothstep(vec4 a, vec4 b, vec4 c)
 {
     return smoothstep(a, b, c);
+}
+
+vec4 _rotate(vec4 a, vec4 b, vec4 c)
+{
+    vec2 wh = vec2(u_width, u_height);
+    vec2 xy;
+    xy.x = int(gl_LocalInvocationID.x + gl_WorkGroupID.x * LX);
+    xy.y = int(gl_LocalInvocationID.y + gl_WorkGroupID.y * LY);
+    xy = u_rot_z * xy;
+    xy.x = mod(xy.x, wh.x);
+    xy.y = mod(xy.y, wh.y);
+    int i = int(xy.x + xy.y * wh.x);
+    return a_col[i];
 }
 
 void main()

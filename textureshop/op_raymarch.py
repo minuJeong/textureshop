@@ -4,7 +4,7 @@ import time
 import imageio as ii
 import numpy as np
 
-from op_base import Base, Init
+from textureshop.src.op_base import Base, Init
 from util import npappend
 
 
@@ -30,7 +30,7 @@ class Raymarch(Base):
 
     @Base.in_node_wrapper
     def in_node(self, in_node, distance_field, lightinfo=None, caminfo=None, steps=64):
-        cs_path = "./gl/raymarch.glsl"
+        cs_path = "/gl/raymarch.glsl"
         self.cs = self.get_cs(cs_path, {
             "%DIST_FIELD%": distance_field,
             "%NEAR%": "0.001",
@@ -90,7 +90,7 @@ class DeferredLight(Base):
 
     @Base.in_node_wrapper
     def in_node(self, in_node, bxdf, g_buffer, lightinfo=None, caminfo=None):
-        cs_post_path = "./gl/raymarch_post.glsl"
+        cs_post_path = "/gl/raymarch_post.glsl"
         self.cs = self.get_cs(cs_post_path, {
             "%BXDF%": bxdf
         })
@@ -150,8 +150,6 @@ class DeferredLight(Base):
         self.cs.run(gx, gy)
 
         return self.post_out.read()
-
-
 
 
 dff = """
@@ -243,7 +241,6 @@ lightinfo.u_lightpos = (-2.0, 3.0, -5.0)
 lightinfo.u_shadow_intensity = 0.25
 
 caminfo = CameraInfo()
-
 
 raymarch_node = Raymarch().in_node(init, dff, lightinfo, caminfo, steps)
 light_node = DeferredLight().in_node(init, bxdf, raymarch_node.out_node(), lightinfo, caminfo)

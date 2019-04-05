@@ -1,3 +1,8 @@
+"""
+op_base module
+
+author: minu jeong
+"""
 
 import os
 from functools import wraps
@@ -21,7 +26,7 @@ class Base(object):
                 self.gl = Base.GL
             else:
                 self.gl = mg.create_standalone_context()
-                print("[Base] New GL context with id: {}".format(id(self.gl)))
+                print("GL context with id: {}".format(id(self.gl)))
         Base.GL = self.gl
 
     @staticmethod
@@ -47,7 +52,8 @@ class Base(object):
         context = None
         if not os.path.isabs(cs_path):
             dirpath = os.path.dirname(__file__)
-            cs_path = "{}/{}".format(dirpath, cs_path)
+            cs_path = "{}/{}".format(dirpath, cs_path.replace("./", ""))
+
         with open(cs_path, 'r') as fp:
             context = fp.read()
 

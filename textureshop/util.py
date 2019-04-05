@@ -1,8 +1,7 @@
-
 from functools import wraps
 
-import numpy as np
 import imageio as ii
+import numpy as np
 
 
 def to_glbytes(f, *args, **kargs):

@@ -1,9 +1,11 @@
 .ropeproject/*
 .idea/*
-*/__pycache__/*
+.pytest_cache/*
 __pycache__/*
+*/__pycache__/*
+*/*/__pycache__/*
 build/*
 dist/*
-Texture_Processor.egg-info/*
+textureshop.egg-info/*
 *.png
 *.mp4

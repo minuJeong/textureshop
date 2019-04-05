@@ -2,8 +2,8 @@ import math
 
 import numpy as np
 
-from op_base import Base
-from util import _value_to_ndarray
+from .op_base import Base
+from .util import _value_to_ndarray
 
 
 class Num(Base):
