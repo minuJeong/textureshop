@@ -1,5 +1,9 @@
 .ropeproject/*
 .idea/*
+*/__pycache__/*
 __pycache__/*
+build/*
+dist/*
+Texture_Processor.egg-info/*
 *.png
 *.mp4
