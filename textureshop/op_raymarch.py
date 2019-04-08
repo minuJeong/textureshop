@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 
-from textureshop.op_base import Base
+from .op_base import Base
 
 
 class LightInfo(object):
@@ -26,7 +26,7 @@ class Raymarch(Base):
     """ raymarch node """
 
     @Base.in_node_wrapper
-    def in_node(self, in_node, distance_field, lightinfo=None, caminfo=None, steps=64):
+    def in_node(self, in_node, distance_field, lightinfo=None, caminfo=None, steps=32):
         cs_path = "./gl/raymarch.glsl"
         self.cs = self.get_cs(cs_path, {
             "%DIST_FIELD%": distance_field,
@@ -54,6 +54,8 @@ class Raymarch(Base):
         self.g_buffer.normal = self.normal
         self.g_buffer.shadow = self.shadow
 
+        self.time = 0
+
     def set_caminfo(self, caminfo=None):
         if not caminfo:
             caminfo = CameraInfo()
@@ -72,6 +74,10 @@ class Raymarch(Base):
             self.cs["u_lightpos"].value = lightinfo.u_lightpos
 
     def out_node(self):
+        self.time += 0.1
+        if "u_time" in self.cs:
+            self.cs["u_time"].value = self.time
+
         self.depth.bind_to_storage_buffer(0)
         self.color.bind_to_storage_buffer(1)
         self.normal.bind_to_storage_buffer(2)

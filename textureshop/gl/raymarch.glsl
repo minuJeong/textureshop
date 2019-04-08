@@ -33,6 +33,7 @@ layout(binding=3) buffer out_shadow
 uniform int u_width;
 uniform int u_height;
 uniform int u_maxsteps;
+uniform float u_time;
 
 uniform vec3 u_campos = vec3(0.0, 0.5, -5.0);
 uniform vec3 u_camtarget = vec3(0.0, 0.0, 0.0);
@@ -114,7 +115,8 @@ float raymarch(vec3 o, vec3 r)
 {
     float t = NEAR;
     float d;
-    for (int i = u_maxsteps; i > 0; i--)
+    int i;
+    for (i = u_maxsteps; i > 0; i--)
     {
         vec3 p = o + r * t;
         d = world(p);
@@ -124,7 +126,8 @@ float raymarch(vec3 o, vec3 r)
         }
         t += d;
     }
-    return FAR;
+
+    return t;
 }
 
 vec3 normal_at(vec3 p)

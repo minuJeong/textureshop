@@ -19,14 +19,27 @@ class Base(object):
         super(Base, self).__init__()
 
         self.W, self.H = size[0], size[1]
+
+        # assign given context if given
         if gl:
             self.gl = gl
         else:
+            # try to fetch static cache context
             if Base.GL:
                 self.gl = Base.GL
             else:
-                self.gl = mg.create_standalone_context()
+                try:
+                    # try to capture existing context
+                    self.gl = mg.create_context(require=440)
+                except:
+                    # for the last choice: create standalone context
+                    self.gl = mg.create_standalone_context(require=440)
                 print("GL context with id: {}".format(id(self.gl)))
+
+        if not self.gl:
+            raise Exception("Can't fetch, capture, create GL context in this machine.")
+
+        # cache context
         Base.GL = self.gl
 
     @staticmethod
