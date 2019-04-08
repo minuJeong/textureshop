@@ -147,4 +147,3 @@ class DeferredLight(Base):
         self.cs.run(gx, gy)
 
         return self.post_out.read()
-

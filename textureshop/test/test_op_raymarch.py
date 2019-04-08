@@ -3,13 +3,9 @@ import unittest
 
 import imageio as ii
 
-# from ..op_base import Init
-# from ..op_raymarch import Raymarch, DeferredLight, LightInfo, CameraInfo
-# from ..util import npappend
-
-from textureshop.op_base import Init
-from textureshop.op_raymarch import Raymarch, DeferredLight, LightInfo, CameraInfo
-from textureshop.util import npappend
+from ..op_base import Init
+from ..op_raymarch import Raymarch, DeferredLight, LightInfo, CameraInfo
+from ..util import npappend
 
 
 class RaymarchTest(unittest.TestCase):
@@ -35,7 +31,7 @@ class RaymarchTest(unittest.TestCase):
             j2 = rot_z(-0.35) * j2;
 
             float b1 = box(j1, r1);
-            float b2 = box(j2, r2);
+            float b2 = box(j2, r2); 
 
             d1 = blend(b1, b2, 0.75);
             if (d1 < d)
@@ -68,7 +64,9 @@ class RaymarchTest(unittest.TestCase):
             d = sph_d;
         }
 
-        d = blend(d1, d2, 0.85);
+        d = blend(d1, d2, 0.65);
+        d += dot(cos(p * 12.0), vec3(sin(u_time) * 0.5));
+
         float cr = (d - d1) / (d2 - d1);
         cr = clamp(cr, 0.0, 1.0);
         if (w_need_color)
@@ -101,13 +99,13 @@ class RaymarchTest(unittest.TestCase):
 
         lightinfo = LightInfo()
         lightinfo.u_lightpos = (-2.0, 3.0, -5.0)
-        lightinfo.u_shadow_intensity = 0.25
+        lightinfo.u_shadow_intensity = 0.000001
 
         caminfo = CameraInfo()
 
         raymarch_node = Raymarch().in_node(init, dff, lightinfo, caminfo, steps)
         light_node = DeferredLight().in_node(init, bxdf, raymarch_node.out_node(), lightinfo, caminfo)
-        output_writer = ii.get_writer("raymarched.mp4", fps=60)
+        output_writer = ii.get_writer("raymarched.mp4", fps=30)
 
         for i in range(120):
             t = i * 0.052
