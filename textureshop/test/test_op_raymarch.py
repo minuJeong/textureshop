@@ -31,7 +31,7 @@ class RaymarchTest(unittest.TestCase):
             j2 = rot_z(-0.35) * j2;
 
             float b1 = box(j1, r1);
-            float b2 = box(j2, r2); 
+            float b2 = box(j2, r2);
 
             d1 = blend(b1, b2, 0.75);
             if (d1 < d)
@@ -54,6 +54,10 @@ class RaymarchTest(unittest.TestCase):
             float s1 = sphere(j1, r1);
             float s2 = sphere(j2, r2);
             float s3 = sphere(j3, r3);
+
+            s1 += dot(cos(p) * 0.05, vec3(0.5));
+            s2 += dot(cos(p) * 0.05, vec3(0.5));
+            s3 += dot(cos(p) * 0.05, vec3(0.5));
 
             d2 = min(s3, min(s1, s2));
             float sph_d = blend(d1, d2, 0.75);
